@@ -14,7 +14,7 @@ export default function Clients({ data, go }) {
   const [nc, setNc] = useState({ name: '', defaultPrice: Number(settings?.defaultPrice) || 200 })
 
   const list = useMemo(() => {
-    let l = clients || []
+    let l = (clients || []).filter((c) => !c.isGroupRow)
     if (q.trim()) l = l.filter((c) => c.name.includes(q.trim()))
     else if (tab === 'active') l = l.filter((c) => c.active !== false)
     else if (tab === 'debt') l = l.filter((c) => (balances[c.id] || 0) < -0.5)

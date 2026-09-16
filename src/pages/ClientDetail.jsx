@@ -51,7 +51,7 @@ export default function ClientDetail({ id, data, go, range }) {
     <div className="col" style={{ gap: 14 }}>
       <div className="row"><button className="icon-btn" onClick={() => go('clients')} aria-label="חזרה"><ArrowRight size={18} /></button><h1 className="grow">{c.name}</h1><button className="icon-btn" onClick={() => { setForm({ name: c.name, defaultPrice: c.defaultPrice, active: c.active !== false }); setEdit(true) }} aria-label="עריכה"><Pencil size={17} /></button></div>
       <div className="kpis">
-        <div className="kpi hero"><span className="bar" style={{ background: b < -0.5 ? 'var(--debt)' : 'var(--credit)' }} /><span className="l">יתרה נכון להיום</span><span className={`v num ${b < -0.5 ? 'debt' : b > 0.5 ? 'credit' : ''}`}>{nis(b, { plus: true })}</span>
+        <div className={`kpi hero ${b < -0.5 ? 'g-debt' : 'g-credit'}`}><span className="bar" style={{ background: b < -0.5 ? 'var(--debt)' : 'var(--credit)', color: b < -0.5 ? 'var(--debt)' : 'var(--credit)' }} /><span className="l">יתרה נכון להיום</span><span className={`v num ${b < -0.5 ? 'debt' : b > 0.5 ? 'credit' : ''}`}>{nis(b, { plus: true })}</span>
           <span className="sub">{b < -0.5 ? `${stats.unpaidCount} אימונים לא שולמו` : b > 0.5 ? 'שילם/ה מראש' : 'מאוזן'}{c.active === false && ' · לא פעיל'}{grp && ` · ${grp.name}`}</span></div>
         <div className="kpi"><span className="l">השנה</span><span className="v num">{nis(stats.ytd)}</span></div>
         <div className="kpi"><span className="l">סה"כ אימונים</span><span className="v num">{num(stats.count)}</span><span className="sub">{nis(stats.total)} מאז {c.firstSeen ? fmtDate(c.firstSeen) : 'ההתחלה'}</span></div>
@@ -68,7 +68,7 @@ export default function ClientDetail({ id, data, go, range }) {
       </div>}
 
       {sessions ? <SessionsTable sessions={sorted} onEdit={setEditS} title="היסטוריית אימונים" /> : <Loading />}
-      {editS && <SessionEditor session={editS} onClose={() => setEditS(null)} />}
+      {editS && <SessionEditor session={editS} onClose={() => setEditS(null)} groups={groups} clients={clients} />}
 
       <Sheet open={edit} onClose={() => setEdit(false)} title="עריכת לקוח" actions={<button className="icon-btn" onClick={() => setAskDel(true)} aria-label="מחק"><Trash2 size={18} /></button>}>
         {form && <div className="col" style={{ gap: 12 }}>

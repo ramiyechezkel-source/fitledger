@@ -79,3 +79,8 @@ export const Seg = ({ value, onChange, options }) => (
 export const Avatar = ({ name, group }) => <div className={`avatar ${group ? 'group' : ''}`}>{(name || '?').trim().slice(0, 2)}</div>
 export const Empty = ({ title, text }) => <div className="empty"><b>{title}</b>{text}</div>
 export const Loading = () => <div style={{ padding: 30 }}><div className="spinner" /></div>
+
+/* ---------- Logo mark ---------- */
+export const Logo = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 128 128" aria-hidden><rect x="26" y="70" width="14" height="32" rx="4" fill="#FF7A5C"/><rect x="48" y="52" width="14" height="50" rx="4" fill="#F4C15D"/><rect x="70" y="34" width="14" height="68" rx="4" fill="#4ADE9E"/><rect x="92" y="22" width="14" height="80" rx="4" fill="#4ADE9E"/><rect x="20" y="106" width="88" height="3" rx="1.5" fill="#8B94AD"/></svg>
+)

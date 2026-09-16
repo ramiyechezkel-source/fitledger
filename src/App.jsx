@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { LayoutDashboard, Users, UsersRound, Plus, MoreHorizontal } from 'lucide-react'
 import { useAuth, useClients, useGroups, usePayments, useMonthly, useSettings, useSessions, useOpenSessions, useSessionsPaidAfter, computeBalances } from './lib/store'
 import { presetRange, today } from './lib/dates'
-import { ToastProvider, Loading } from './components/ui'
+import { ToastProvider, Loading, Logo } from './components/ui'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import AddSession from './pages/AddSession'
@@ -43,24 +43,24 @@ function Shell({ user, route, go, range, setRange }) {
   const asOf = range.to < today() ? range.to : today()
   const [paidAfter] = useSessionsPaidAfter(asOf)
   const balances = useMemo(() => computeBalances({ openSessions: openSessions || [], paidAfter: paidAfter || [], payments: payments || [], asOf }), [openSessions, paidAfter, payments, asOf])
-  const data = { clients, groups, payments, monthly, settings, sessions, balances }
+  const data = { clients, groups, payments, monthly, settings, sessions, balances, openSessions: openSessions || [] }
   const page = route.page
   const cur = page === 'client' ? 'clients' : page
 
   return (
     <div className="shell">
       <nav className="nav" aria-label="ניווט">
-        <div className="brand hide-mobile"><div className="logo"><img src={import.meta.env.BASE_URL + 'icon.svg'} width="22" height="22" alt="" /></div>FitLedger</div>
+        <div className="brand hide-mobile"><div className="logo"><Logo size={22} /></div>FitLedger</div>
         {NAV.map((n) => n.fab
           ? <button key={n.id} className={`fab ${cur === 'add' ? 'on' : ''}`} onClick={() => go('add')} aria-label="רישום אימון"><span className="circle"><Plus size={24} strokeWidth={2.5} /><span className="hide-mobile">רישום אימון</span></span></button>
-          : <button key={n.id} className={cur === n.id ? 'on' : ''} onClick={() => go(n.id)}><n.Icon size={22} strokeWidth={cur === n.id ? 2.4 : 1.8} /><span>{n.label}</span></button>)}
+          : <button key={n.id} className={`${cur === n.id ? 'on' : ''} ${n.desktopOnly ? 'hide-mobile' : ''}`} onClick={() => go(n.id)}><n.Icon size={22} strokeWidth={cur === n.id ? 2.4 : 1.8} /><span>{n.label}</span></button>)}
       </nav>
       <div className="grow">
-        <header className="topbar hide-desktop"><div className="brand"><div className="logo"><img src={import.meta.env.BASE_URL + 'icon.svg'} width="20" height="20" alt="" /></div>FitLedger</div></header>
+        <header className="topbar hide-desktop"><div className="brand"><div className="logo"><Logo size={20} /></div>FitLedger</div></header>
         <main className="main">
           {sessErr && <div className="banner debt">{sessErr.code === 'resource-exhausted' ? 'המכסה היומית החינמית נגמרה. השירות חוזר בסביבות 10:00 בבוקר. מה שכבר נטען מוצג מהזיכרון.' : sessErr.code === 'permission-denied' ? 'אין הרשאה לקרוא נתונים. התחבר מחדש.' : 'שגיאה בטעינת נתונים: ' + sessErr.message}</div>}
           {page === 'dash' && <Dashboard data={data} range={range} setRange={setRange} go={go} />}
-          {page === 'add' && <AddSession data={data} go={go} />}
+          {page === 'add' && <AddSession data={data} go={go} arg={route.arg} />}
           {page === 'clients' && <Clients data={data} go={go} />}
           {page === 'client' && <ClientDetail id={route.arg} data={data} go={go} range={range} />}
           {page === 'groups' && <Groups data={data} go={go} />}

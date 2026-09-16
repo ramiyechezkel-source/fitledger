@@ -170,7 +170,7 @@ export async function isDbEmpty() {
 /** טעינת ההיסטוריה מהאקסל (קובץ history.json שנבנה מראש). */
 export async function importSeed(seed, onProgress) {
   const all = []
-  for (const c of seed.clients) all.push(['clients', c.id, { name: c.name, defaultPrice: c.defaultPrice, active: c.active, groupId: c.groupId || null, firstSeen: c.firstSeen, lastSeen: c.lastSeen, src: 'excel' }])
+  for (const c of seed.clients) all.push(['clients', c.id, { name: c.name, defaultPrice: c.defaultPrice, active: c.active, groupId: c.groupId || null, firstSeen: c.firstSeen, lastSeen: c.lastSeen, isGroupRow: !!c.isGroupRow, src: 'excel' }])
   for (const g of seed.groups) all.push(['groups', g.id, { name: g.name, memberIds: g.memberIds, defaultPrice: g.defaultPrice, active: g.active, firstSeen: g.firstSeen, lastSeen: g.lastSeen, src: 'excel' }])
   for (const p of seed.payments) all.push(['payments', p.id, { date: p.date, clientId: p.clientId, clientName: p.clientName, amount: p.amount, note: p.note, src: 'excel' }])
   const monthly = {}
@@ -210,4 +210,18 @@ export async function importRows(rows, clients, groups) {
   await batch.commit()
   for (let i = 0; i < list.length; i += 400) await addSessions(list.slice(i, i + 400))
   return { sessions: list.length, newClients: Object.keys(newClients).length }
+}
+
+/** מחיקה מלאה של כל הנתונים (לקוחות, קבוצות, אימונים, תשלומים, סיכומים, הגדרות). לשימוש בשלב ההרצה בלבד. */
+export async function wipeAll(onProgress) {
+  const cols = ['sessions', 'payments', 'clients', 'groups', 'monthly', 'settings']
+  let total = 0, done = 0
+  const refs = []
+  for (const c of cols) { const snap = await getDocs(collection(db, c)); snap.docs.forEach((d) => refs.push(d.ref)); total += snap.size }
+  for (let i = 0; i < refs.length; i += 450) {
+    const batch = writeBatch(db)
+    refs.slice(i, i + 450).forEach((r) => batch.delete(r))
+    await batch.commit(); done = Math.min(total, i + 450); onProgress && onProgress(done, total)
+  }
+  return total
 }

@@ -8,7 +8,7 @@ export default function ClientPicker({ clients, balances = {}, value, onChange, 
   const [open, setOpen] = useState(false)
   const list = useMemo(() => {
     const s = q.trim()
-    let l = clients || []
+    let l = (clients || []).filter((c) => !c.isGroupRow)
     if (activeOnly && !s) l = l.filter((c) => c.active !== false)
     if (s) l = l.filter((c) => c.name.includes(s))
     l = [...l].sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''))

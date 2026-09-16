@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Upload, Download, LogOut, Database, FileSpreadsheet, Settings } from 'lucide-react'
-import { logout, importSeed, isDbEmpty, importRows, saveSettings } from '../lib/store'
+import { logout, importSeed, isDbEmpty, importRows, saveSettings, wipeAll } from '../lib/store'
 import { parseImport, downloadTemplate, exportSessions } from '../lib/excel'
 import { nis, num } from '../lib/format'
 import { Field, Stepper, useToast, Sheet } from '../components/ui'
@@ -22,6 +22,17 @@ export default function More({ data, user }) {
       await importSeed(seed, (done, total) => setProg({ done, total }))
       toast(`נטענו ${num(seed.sessions.length)} אימונים ו-${seed.clients.length} לקוחות`)
     } catch (e) { console.error(e); toast('הטעינה נכשלה: ' + e.message, 'err') } finally { setProg(null) }
+  }
+  const wipeAndReload = async () => {
+    const word = prompt('פעולה זו מוחקת את כל הנתונים באפליקציה (כולל מה שנרשם ידנית!) וטוענת מחדש מהאקסל.\nכדי לאשר, הקלד: מחק')
+    if (word !== 'מחק') return
+    setProg({ done: 0, total: 1 })
+    try {
+      const n = await wipeAll((done, total) => setProg({ done, total }))
+      const seed = await (await fetch(import.meta.env.BASE_URL + 'history.json')).json()
+      await importSeed(seed, (done, total) => setProg({ done, total }))
+      toast(`נמחקו ${num(n)} רשומות ונטענו ${num(seed.sessions.length)} אימונים מחדש`)
+    } catch (e) { console.error(e); toast('נכשל: ' + e.message, 'err') } finally { setProg(null) }
   }
   const onFile = async (e) => {
     const f = e.target.files?.[0]; if (!f) return
@@ -56,7 +67,9 @@ export default function More({ data, user }) {
 
       <div className="card col" style={{ gap: 10 }}>
         <div className="card-title"><span className="row"><Database size={18} />נתונים</span></div>
-        {settings?.seedLoaded ? <div className="sm text2">ההיסטוריה מהאקסל נטענה ב-{settings.seedLoadedAt?.slice(0, 10)} ({num(settings.seedLoaded.rows)} שורות מקור).</div>
+        {settings?.seedLoaded ? <><div className="sm text2">ההיסטוריה מהאקסל נטענה ב-{settings.seedLoadedAt?.slice(0, 10)} ({num(settings.seedLoaded.rows)} שורות מקור, גרסת קובץ {settings.seedLoaded.generated}).</div>
+          <button className="btn sm danger" disabled={!!prog} onClick={wipeAndReload} style={{ alignSelf: 'flex-start' }}>{prog ? `עובד… ${Math.round((prog.done / prog.total) * 100)}%` : 'מחק הכל וטען מחדש מהאקסל'}</button>
+          <div className="xs muted">לשלב ההרצה בלבד: מוחק גם אימונים שנרשמו ידנית. אחרי שניר מתחיל לעבוד, לא להשתמש.</div></>
           : <><div className="sm text2">טעינה חד-פעמית של ההיסטוריה מהאקסל של ניר (2020–2026). אפשרית רק כשבסיס הנתונים ריק.</div><button className="btn primary" disabled={!!prog} onClick={loadHistory}>{prog ? `טוען… ${Math.round((prog.done / prog.total) * 100)}%` : 'טען היסטוריה מהאקסל'}</button></>}
         <div className="xs muted">מחובר כ-{user?.email}</div>
         <button className="btn ghost" onClick={logout} style={{ alignSelf: 'flex-start' }}><LogOut size={16} />יציאה</button>

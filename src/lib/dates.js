@@ -1,6 +1,8 @@
 export const pad = (n) => String(n).padStart(2, '0')
 export const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-export const today = () => iso(new Date())
+export const today = () => (typeof window !== 'undefined' && window.__TODAY__) || iso(new Date())
+export const weekday = (ds) => new Date(ds + 'T00:00:00').getDay()
+export const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000)
 export const monthKey = (ds) => ds.slice(0, 7)
 export const addDays = (ds, n) => { const d = new Date(ds + 'T00:00:00'); d.setDate(d.getDate() + n); return iso(d) }
 export const addMonths = (ds, n) => { const d = new Date(ds + 'T00:00:00'); d.setMonth(d.getMonth() + n); return iso(d) }
